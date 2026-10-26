@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gradient To-Do App</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+    }
+
+    .todo-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 30px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 20px 50px rgba(30, 20, 80, 0.25);
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #f1eaff;
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #taskInput {
+      flex: 1;
+      min-width: 0;
+      padding: 14px;
+      border: none;
+      outline: none;
+      border-radius: 12px;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    #addBtn {
+      padding: 0 18px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    #addBtn:hover {
+      transform: scale(1.06);
+    }
+
+    .task-info {
+      display: flex;
+      justify-content: space-between;
+      color: white;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    #taskList {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #333;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .task input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #764ba2;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .task-text {
+      flex: 1;
+      overflow-wrap: anywhere;
+      font-size: 15px;
+    }
+
+    .task.completed .task-text {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .delete-btn {
+      border: none;
+      background: #ffe4e8;
+      color: #e04462;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .delete-btn:hover {
+      background: #ffcbd4;
+    }
+
+    #emptyMessage {
+      color: white;
+      text-align: center;
+      padding: 25px 5px;
+      font-size: 14px;
+    }
+
+    .clear-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 400px) {
+      .todo-container {
+        padding: 22px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      #addBtn {
+        padding: 0 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="todo-container">
+    <h1>✨ My To-Do List</h1>
+    <p class="subtitle">Small steps, big achievements!</p>
+
+    <form class="input-group" id="taskForm">
+      <input
+        type="text"
+        id="taskInput"
+        placeholder="What needs to be done?"
+        maxlength="200"
+        autocomplete="off"
+        aria-label="New task"
+        required
+      >
+      <button type="submit" id="addBtn" aria-label="Add task">+</button>
+    </form>
+
+    <div class="task-info">
+      <span>Your tasks</span>
+      <span id="taskCount">0 tasks left</span>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <p id="emptyMessage">No tasks yet. Add one to get started! 🌈</p>
+
+    <button class="clear-btn" id="clearCompleted">
+      Clear Completed Tasks
+    </button>
+  </main>
+
+  <script>
+    const taskForm = document.getElementById("taskForm");
+    const taskInput = document.getElementById("taskInput");
+    const taskList = document.getElementById("taskList");
+    const taskCount = document.getElementById("taskCount");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const clearCompleted = document.getElementById("clearCompleted");
+
+    let tasks = [];
+
+    function renderTasks() {
+      taskList.replaceChildren();
+
+      tasks.forEach((task) => {
+        const li = document.createElement("li");
+        li.className = "task";
+
+        if (task.completed) {
+          li.classList.add("completed");
+        }
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.setAttribute("aria-label", "Complete task");
+
+        checkbox.addEventListener("change", () => {
+          task.completed = checkbox.checked;
+          renderTasks();
+        });
+
+        const text = document.createElement("span");
+        text.className = "task-text";
+        text.textContent = task.text;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "✕";
+        deleteBtn.setAttribute("aria-label", "Delete " + task.text);
+
+        deleteBtn.addEventListener("click", () => {
+          tasks = tasks.filter((item) => item.id !== task.id);
+          renderTasks();
+        });
+
+        li.append(checkbox, text, deleteBtn);
+        taskList.appendChild(li);
+      });
+
+      const remaining = tasks.filter(
+        (task) => !task.completed
+      ).length;
+
+      taskCount.textContent =
+        remaining + (remaining === 1 ? " task left" : " tasks left");
+
+      emptyMessage.hidden = tasks.length > 0;
+    }
+
+    taskForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const text = taskInput.value.trim();
+
+      if (!text) return;
+
+      tasks.push({
+        id: Date.now() + Math.random(),
+        text: text,
+        completed: false
+      });
+
+      taskInput.value = "";
+      renderTasks();
+      taskInput.focus();
+    });
+
+    clearCompleted.addEventListener("click", () => {
+      tasks = tasks.filter((task) => !task.completed);
+      renderTasks();
+    });
+
+    renderTasks();
+  </script>
+
+</body>
+</html>
